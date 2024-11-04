@@ -1,3 +1,5 @@
+package src.main.java.com.cryptography;
+
 import javax.swing.*;
 import java.awt.*;
 import javax.crypto.*;
