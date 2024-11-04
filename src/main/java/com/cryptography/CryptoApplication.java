@@ -55,7 +55,7 @@ public class CryptoApplication extends JFrame {
         JPanel teamPanel = new JPanel();
         teamPanel.setBackground(ACCENT_COLOR);
         teamPanel.setBorder(null);
-        JLabel teamLabel = new JLabel("Team Members: Ayman Sahyoun | Aws Silawi | Muhannad Basyouni");
+        JLabel teamLabel = new JLabel("Team Members: Ayman Sahyoun | Muhannad Al Basyouni");
         teamLabel.setForeground(TEXT_COLOR);
         teamLabel.setFont(TITLE_FONT.deriveFont(Font.PLAIN, 16));
         teamPanel.add(teamLabel);
