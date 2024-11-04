@@ -19,6 +19,7 @@ target/
 
 # Log files
 *.log
+*.docx
 
 # Package files
 *.jar
