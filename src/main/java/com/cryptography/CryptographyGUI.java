@@ -1,4 +1,4 @@
-package src.main.java.com.cryptography;
+package com.cryptography;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,7 +8,7 @@ import java.security.*;
 import java.util.Base64;
 import java.security.spec.PKCS8EncodedKeySpec;
 import javax.swing.UIManager;
-import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
 import java.awt.Color;
 import java.awt.Font;
 import javax.swing.border.EmptyBorder;
@@ -20,11 +20,16 @@ import java.awt.datatransfer.DataFlavor;
 import java.io.ByteArrayOutputStream;
 import java.security.interfaces.RSAPublicKey;
 import java.security.interfaces.RSAPrivateKey;
+import javax.imageio.ImageIO;
 
 public class CryptographyGUI extends JFrame {
-    private static final Color BACKGROUND_COLOR = new Color(240, 240, 240);
-    private static final Color ACCENT_COLOR = new Color(70, 130, 180);
-    private static final Color TEXT_COLOR = new Color(51, 51, 51);
+    private static final Color BACKGROUND_COLOR = new Color(18, 18, 18);
+    private static final Color ACCENT_COLOR = new Color(48, 48, 48);
+    private static final Color TEXT_COLOR = new Color(220, 220, 220);
+    private static final Color INPUT_BG_COLOR = new Color(30, 30, 30);
+    private static final Color BUTTON_COLOR = new Color(60, 60, 60);
+    private static final Color BUTTON_HOVER_COLOR = new Color(75, 75, 75);
+    private static final Color BORDER_COLOR = new Color(70, 70, 70);
     private static final Font TITLE_FONT = new Font("Segoe UI", Font.BOLD, 14);
     private static final Font REGULAR_FONT = new Font("Segoe UI", Font.PLAIN, 12);
 
@@ -44,39 +49,84 @@ public class CryptographyGUI extends JFrame {
     private JTextArea decryptOutputArea;
     private JTextArea rsaPrivateKeyArea;
     private JTextField aesKeyField;
+    private JComboBox<String> decryptKeySizeBox;
 
     public CryptographyGUI() {
         try {
-            UIManager.setLookAndFeel(new FlatLightLaf());
+            UIManager.setLookAndFeel(new FlatDarkLaf());
             UIManager.put("control", BACKGROUND_COLOR);
             UIManager.put("text", TEXT_COLOR);
             UIManager.put("nimbusBase", ACCENT_COLOR);
+            UIManager.put("TextArea.background", INPUT_BG_COLOR);
+            UIManager.put("TextField.background", INPUT_BG_COLOR);
+            UIManager.put("ComboBox.background", INPUT_BG_COLOR);
+            UIManager.put("TabbedPane.background", BACKGROUND_COLOR);
+            UIManager.put("Panel.background", BACKGROUND_COLOR);
+            UIManager.put("ComboBox.foreground", TEXT_COLOR);
+            UIManager.put("Label.foreground", TEXT_COLOR);
+            UIManager.put("TabbedPane.foreground", TEXT_COLOR);
+            UIManager.put("TabbedPane.selected", ACCENT_COLOR);
+            
+            // Add these new UI settings for TabbedPane
+            UIManager.put("TabbedPane.background", BACKGROUND_COLOR);
+            UIManager.put("TabbedPane.selectedBackground", ACCENT_COLOR);
+            UIManager.put("TabbedPane.unselectedBackground", BACKGROUND_COLOR);
+            UIManager.put("TabbedPane.contentAreaColor", BACKGROUND_COLOR);
+            UIManager.put("TabbedPane.focusColor", ACCENT_COLOR);
+            UIManager.put("TabbedPane.hoverColor", BUTTON_HOVER_COLOR);
+            UIManager.put("TabbedPane.underlineColor", ACCENT_COLOR);
+            UIManager.put("TabbedPane.inactiveUnderlineColor", BACKGROUND_COLOR);
+            
+            // Add these additional UI settings
+            UIManager.put("Panel.background", BACKGROUND_COLOR);
+            UIManager.put("RootPane.background", BACKGROUND_COLOR);
+            UIManager.put("ContentPane.background", BACKGROUND_COLOR);
+            getRootPane().putClientProperty("JRootPane.titleBarBackground", BACKGROUND_COLOR);
+            
+            try {
+                Image icon = ImageIO.read(getClass().getResourceAsStream("/images/app_icon.png"));
+                setIconImage(icon);
+            } catch (Exception e) {
+                System.err.println("Could not load application icon: " + e.getMessage());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        setTitle("Cryptography Application - Ajman University");
+        setTitle("Cryptography Application (INT303) - Ajman University");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout(10, 10));
         
+        // Set the content pane background
+        Container contentPane = getContentPane();
+        contentPane.setBackground(BACKGROUND_COLOR);
+        
+        // Remove the default border
+        ((JPanel)contentPane).setBorder(null);
+        
+        setLayout(new BorderLayout(0, 0)); // Remove the gaps
+        
+        // Update team panel to remove any gaps
         JPanel teamPanel = new JPanel();
         teamPanel.setBackground(ACCENT_COLOR);
-        teamPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        teamPanel.setBorder(null);  // Remove any border
         JLabel teamLabel = new JLabel("Team Members: Ayman Sahyoun | Aws Silawi | Muhannad Basyouni");
-        teamLabel.setForeground(Color.WHITE);
+        teamLabel.setForeground(TEXT_COLOR);
         teamLabel.setFont(TITLE_FONT.deriveFont(Font.PLAIN, 16));
         teamPanel.add(teamLabel);
         add(teamPanel, BorderLayout.NORTH);
 
         tabbedPane = new JTabbedPane();
         tabbedPane.setFont(TITLE_FONT);
-        tabbedPane.setBorder(new EmptyBorder(10, 10, 10, 10));
+        tabbedPane.setBorder(null);  // Remove the border
+        tabbedPane.setBackground(BACKGROUND_COLOR);
+        tabbedPane.setForeground(TEXT_COLOR);
+        tabbedPane.setOpaque(true);
         
         encryptionPanel = createEncryptionPanel();
         decryptionPanel = createDecryptionPanel();
         
-        tabbedPane.addTab("Encryption", createStyledIcon("🔒"), encryptionPanel);
-        tabbedPane.addTab("Decryption", createStyledIcon("🔓"), decryptionPanel);
+        tabbedPane.addTab("Encryption", encryptionPanel);
+        tabbedPane.addTab("Decryption", decryptionPanel);
         
         add(tabbedPane, BorderLayout.CENTER);
         
@@ -93,45 +143,31 @@ public class CryptographyGUI extends JFrame {
         statusBar.setBackground(ACCENT_COLOR);
         statusBar.setBorder(new EmptyBorder(5, 10, 5, 10));
         JLabel statusLabel = new JLabel("Ready");
-        statusLabel.setForeground(Color.WHITE);
+        statusLabel.setForeground(TEXT_COLOR);
         statusBar.add(statusLabel, BorderLayout.WEST);
         return statusBar;
     }
 
-    private Icon createStyledIcon(String unicode) {
-        return new Icon() {
-            @Override
-            public void paintIcon(Component c, Graphics g, int x, int y) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                                  RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-                g2.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-                g2.setColor(ACCENT_COLOR);
-                g2.drawString(unicode, x, y + 16);
-                g2.dispose();
-            }
-
-            @Override
-            public int getIconWidth() {
-                return 20;
-            }
-
-            @Override
-            public int getIconHeight() {
-                return 20;
-            }
-        };
-    }
-
     private JPanel createStyledButton(JButton button) {
         button.setFont(REGULAR_FONT.deriveFont(Font.PLAIN, 14));
-        button.setBackground(ACCENT_COLOR);
-        button.setForeground(Color.WHITE);
+        button.setBackground(BUTTON_COLOR);
+        button.setForeground(TEXT_COLOR);
         button.setFocusPainted(false);
         button.setBorder(new CompoundBorder(
-            new LineBorder(ACCENT_COLOR.darker(), 1),
+            new LineBorder(BORDER_COLOR, 1),
             new EmptyBorder(8, 20, 8, 20)
         ));
+        
+        // Add hover effect
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(BUTTON_HOVER_COLOR);
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(BUTTON_COLOR);
+            }
+        });
         
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.setBackground(BACKGROUND_COLOR);
@@ -141,15 +177,17 @@ public class CryptographyGUI extends JFrame {
 
     private void styleTextArea(JTextArea textArea, String title) {
         textArea.setFont(REGULAR_FONT.deriveFont(Font.PLAIN, 14));
-        textArea.setBackground(Color.WHITE);
+        textArea.setBackground(INPUT_BG_COLOR);
+        textArea.setForeground(TEXT_COLOR);
+        textArea.setCaretColor(TEXT_COLOR);
         textArea.setBorder(new CompoundBorder(
             BorderFactory.createTitledBorder(
-                new LineBorder(ACCENT_COLOR, 1),
+                new LineBorder(BORDER_COLOR, 1),
                 title,
                 javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
                 javax.swing.border.TitledBorder.DEFAULT_POSITION,
                 TITLE_FONT.deriveFont(Font.PLAIN, 14),
-                ACCENT_COLOR
+                TEXT_COLOR
             ),
             new EmptyBorder(10, 10, 10, 10)
         ));
@@ -165,14 +203,20 @@ public class CryptographyGUI extends JFrame {
         
         // Method selection panel
         JPanel methodPanel = new JPanel(new BorderLayout(5, 0));
+        methodPanel.setBackground(BACKGROUND_COLOR);
         methodPanel.add(new JLabel("Method:"), BorderLayout.WEST);
         methodBox = new JComboBox<>(new String[]{"AES (Symmetric)", "RSA (Asymmetric)"});
+        methodBox.setBackground(INPUT_BG_COLOR);
+        methodBox.setForeground(TEXT_COLOR);
         methodPanel.add(methodBox, BorderLayout.CENTER);
         
         // Key size panel
         JPanel keySizePanel = new JPanel(new BorderLayout(5, 0));
+        keySizePanel.setBackground(BACKGROUND_COLOR);
         keySizePanel.add(new JLabel("Key Size:"), BorderLayout.WEST);
         keySizeBox = new JComboBox<>();
+        keySizeBox.setBackground(INPUT_BG_COLOR);
+        keySizeBox.setForeground(TEXT_COLOR);
         keySizePanel.add(keySizeBox, BorderLayout.CENTER);
         updateKeySizes();
         
@@ -181,13 +225,14 @@ public class CryptographyGUI extends JFrame {
         
         // AES panel
         JPanel aesPanel = new JPanel(new BorderLayout(5, 0));
+        aesPanel.setBackground(BACKGROUND_COLOR);
         aesPanel.setBorder(new EmptyBorder(10, 0, 10, 0));
         
         // Create styled AES key input panel
         JPanel aesKeyInputPanel = new JPanel(new BorderLayout(10, 0));
-        aesKeyInputPanel.setBackground(Color.WHITE);
+        aesKeyInputPanel.setBackground(INPUT_BG_COLOR);
         aesKeyInputPanel.setBorder(new CompoundBorder(
-            new LineBorder(ACCENT_COLOR, 1),
+            new LineBorder(BORDER_COLOR, 1),
             new EmptyBorder(8, 10, 8, 10)
         ));
         
@@ -199,6 +244,9 @@ public class CryptographyGUI extends JFrame {
         // Style the text field
         keyField = new JTextField();
         keyField.setFont(REGULAR_FONT);
+        keyField.setBackground(INPUT_BG_COLOR);
+        keyField.setForeground(TEXT_COLOR);
+        keyField.setCaretColor(TEXT_COLOR);
         keyField.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         
         aesKeyInputPanel.add(aesKeyLabel, BorderLayout.WEST);
@@ -302,47 +350,59 @@ public class CryptographyGUI extends JFrame {
 
     private JPanel createDecryptionPanel() {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
+        panel.setBackground(BACKGROUND_COLOR);
         
         // Create left control panel
         JPanel controlPanel = new JPanel(new GridLayout(5, 1, 3, 3));
+        controlPanel.setBackground(BACKGROUND_COLOR);
         controlPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         controlPanel.setPreferredSize(new Dimension(250, -1));
         
         // Method selection panel
         JPanel methodPanel = new JPanel(new BorderLayout(5, 0));
+        methodPanel.setBackground(BACKGROUND_COLOR);
         methodPanel.add(new JLabel("Method:"), BorderLayout.WEST);
         JComboBox<String> decryptMethodBox = new JComboBox<>(new String[]{"AES (Symmetric)", "RSA (Asymmetric)"});
+        decryptMethodBox.setBackground(INPUT_BG_COLOR);
+        decryptMethodBox.setForeground(TEXT_COLOR);
         methodPanel.add(decryptMethodBox, BorderLayout.CENTER);
         
         // Key size panel
         JPanel keySizePanel = new JPanel(new BorderLayout(5, 0));
+        keySizePanel.setBackground(BACKGROUND_COLOR);
         keySizePanel.add(new JLabel("Key Size:"), BorderLayout.WEST);
-        JComboBox<String> decryptKeySizeBox = new JComboBox<>();
+        decryptKeySizeBox = new JComboBox<>();
+        decryptKeySizeBox.setBackground(INPUT_BG_COLOR);
+        decryptKeySizeBox.setForeground(TEXT_COLOR);
         keySizePanel.add(decryptKeySizeBox, BorderLayout.CENTER);
         
-        // Key input panel with card layout
+        // Key input panel
         JPanel decryptKeyPanel = new JPanel(new CardLayout());
+        decryptKeyPanel.setBackground(BACKGROUND_COLOR);
         
         // AES key panel
         JPanel aesKeyPanel = new JPanel(new BorderLayout(5, 0));
+        aesKeyPanel.setBackground(BACKGROUND_COLOR);
         aesKeyPanel.setBorder(new EmptyBorder(10, 0, 10, 0));
         
         // Create styled AES key input panel
         JPanel aesKeyInputPanel = new JPanel(new BorderLayout(10, 0));
-        aesKeyInputPanel.setBackground(Color.WHITE);
+        aesKeyInputPanel.setBackground(INPUT_BG_COLOR);
         aesKeyInputPanel.setBorder(new CompoundBorder(
-            new LineBorder(ACCENT_COLOR, 1),
+            new LineBorder(BORDER_COLOR, 1),
             new EmptyBorder(8, 10, 8, 10)
         ));
         
-        // Style the label
+        // Style the label and text field
         JLabel aesKeyLabel = new JLabel("AES Key:");
         aesKeyLabel.setFont(REGULAR_FONT);
         aesKeyLabel.setForeground(TEXT_COLOR);
         
-        // Style the text field
         aesKeyField = new JTextField();
         aesKeyField.setFont(REGULAR_FONT);
+        aesKeyField.setBackground(INPUT_BG_COLOR);
+        aesKeyField.setForeground(TEXT_COLOR);
+        aesKeyField.setCaretColor(TEXT_COLOR);
         aesKeyField.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         
         aesKeyInputPanel.add(aesKeyLabel, BorderLayout.WEST);
@@ -351,11 +411,33 @@ public class CryptographyGUI extends JFrame {
         
         // RSA key panel
         JPanel rsaPanel = new JPanel(new BorderLayout(5, 0));
+        rsaPanel.setBackground(BACKGROUND_COLOR);
+        
+        // Create and style RSA private key area
         rsaPrivateKeyArea = new JTextArea(3, 30);
         rsaPrivateKeyArea.setLineWrap(true);
         rsaPrivateKeyArea.setWrapStyleWord(true);
-        styleTextArea(rsaPrivateKeyArea, "RSA Private Key");
-        rsaPanel.add(new JScrollPane(rsaPrivateKeyArea), BorderLayout.CENTER);
+        rsaPrivateKeyArea.setBackground(INPUT_BG_COLOR);
+        rsaPrivateKeyArea.setForeground(TEXT_COLOR);
+        rsaPrivateKeyArea.setCaretColor(TEXT_COLOR);
+        
+        // Create scroll pane for RSA private key
+        JScrollPane scrollPane = new JScrollPane(rsaPrivateKeyArea);
+        scrollPane.setBackground(BACKGROUND_COLOR);
+        scrollPane.getViewport().setBackground(INPUT_BG_COLOR);
+        scrollPane.setBorder(new CompoundBorder(
+            BorderFactory.createTitledBorder(
+                new LineBorder(BORDER_COLOR, 1),
+                "RSA Private Key",
+                javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
+                javax.swing.border.TitledBorder.DEFAULT_POSITION,
+                TITLE_FONT.deriveFont(Font.PLAIN, 14),
+                TEXT_COLOR
+            ),
+            new EmptyBorder(10, 10, 10, 10)
+        ));
+        
+        rsaPanel.add(scrollPane, BorderLayout.CENTER);
         
         // Add key panels to card layout
         decryptKeyPanel.add(aesKeyPanel, "AES");
@@ -401,7 +483,7 @@ public class CryptographyGUI extends JFrame {
         
         // Add method change listener
         decryptMethodBox.addActionListener(e -> {
-            decryptKeySizeBox.removeAllItems();
+            decryptKeySizeBox.removeAllItems();  // Clear existing items
             if (decryptMethodBox.getSelectedItem().toString().startsWith("AES")) {
                 decryptKeySizeBox.addItem("128");
                 decryptKeySizeBox.addItem("192");
@@ -418,8 +500,8 @@ public class CryptographyGUI extends JFrame {
             }
         });
         
-        // Set initial selection
-        decryptMethodBox.setSelectedIndex(0);
+        // Set initial key sizes
+        decryptMethodBox.setSelectedIndex(0);  // This will trigger the listener and set initial key sizes
         
         // Create and add the text areas panel
         JPanel textAreasPanel = new JPanel(new GridLayout(2, 1, 5, 5));
@@ -469,7 +551,7 @@ public class CryptographyGUI extends JFrame {
                 }
             } else {
                 String method = methodBox.getSelectedItem().toString();
-                int keySize = Integer.parseInt(keySizeBox.getSelectedItem().toString());
+                int keySize = Integer.parseInt(decryptKeySizeBox.getSelectedItem().toString());
                 String input = decryptInputArea.getText();
 
                 if (method.startsWith("AES")) {
